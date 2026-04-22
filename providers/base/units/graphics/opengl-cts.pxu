@@ -163,8 +163,6 @@ plugin: shell
 id: graphics/gl_classic_gpu_avail
 category_id: com.canonical.plainbox::graphics
 user: root
-requires:
-  executable.name == 'eglinfo'
 _summary: Checks for OpenGL-capable GPU using host drivers
 environ:
   XDG_SESSION_TYPE
