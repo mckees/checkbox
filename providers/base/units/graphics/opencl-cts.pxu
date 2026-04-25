@@ -437,3 +437,102 @@ _siblings: [
   { "id": "graphics/cl_host_subgroups",
     "_summary": "Run the subgroups tests from OpenCL-CTS (host)",
     "command": "cl_host.py run-test subgroups/test_subgroups" }]
+
+id: graphics/cl_sru_core_thread_dimensions
+depends:
+  graphics/cl_gpu_avail
+  setup/install_opencl_cts
+category_id: com.canonical.plainbox::graphics
+flags: simple
+user: root
+_summary: Run the thread_dimensions tests from OpenCL-CTS (core, quick)
+environ:
+  XDG_SESSION_TYPE
+  XDG_RUNTIME_DIR
+estimated_duration: 5m
+command: opencl-cts.test thread_dimensions/test_thread_dimensions quick*
+
+id: graphics/cl_sru_core_integer_ops
+depends:
+  graphics/cl_gpu_avail
+  setup/install_opencl_cts
+category_id: com.canonical.plainbox::graphics
+flags: simple
+user: root
+_summary: Run the integer_ops tests from OpenCL-CTS (core, quick)
+environ:
+  XDG_SESSION_TYPE
+  XDG_RUNTIME_DIR
+estimated_duration: 5m
+command: opencl-cts.test integer_ops/test_integer_ops quick*
+
+id: graphics/cl_sru_host_thread_dimensions
+depends:
+  graphics/cl_host_gpu_avail
+  graphics/cl_host_ocl_avail
+setup_include:
+  setup/install_opencl_cts
+category_id: com.canonical.plainbox::graphics
+flags: simple
+user: root
+_summary: Run the thread_dimensions tests from OpenCL-CTS (host, quick)
+environ:
+  XDG_SESSION_TYPE
+  XDG_RUNTIME_DIR
+estimated_duration: 5m
+command: cl_host.py run-test thread_dimensions/test_thread_dimensions quick*
+
+id: graphics/cl_sru_host_integer_ops
+depends:
+  graphics/cl_host_gpu_avail
+  graphics/cl_host_ocl_avail
+setup_include:
+  setup/install_opencl_cts
+category_id: com.canonical.plainbox::graphics
+flags: simple
+user: root
+_summary: Run the integer_ops tests from OpenCL-CTS (host, quick)
+environ:
+  XDG_SESSION_TYPE
+  XDG_RUNTIME_DIR
+estimated_duration: 5m
+command: cl_host.py run-test integer_ops/test_integer_ops quick*
+
+id: opencl-core-short-test-plan
+unit: test plan
+_name: Graphics short test plan for verifying OpenCL (core/snap)
+include:
+    setup/install_opencl_cts
+    graphics/cl_gpu_avail
+    graphics/cl_core_basic
+    graphics/cl_core_api
+    graphics/cl_core_compiler
+    graphics/cl_core_commonfns
+    graphics/cl_core_relationals
+    graphics/cl_core_atomics
+    graphics/cl_core_svm
+    graphics/cl_sru_core_thread_dimensions
+    graphics/cl_sru_core_integer_ops
+bootstrap_include:
+    graphics_card
+    executable
+
+id: opencl-host-short-test-plan
+unit: test plan
+_name: Graphics short test plan for verifying OpenCL (host)
+include:
+    setup/install_opencl_cts
+    graphics/cl_host_gpu_avail
+    graphics/cl_host_ocl_avail
+    graphics/cl_host_basic
+    graphics/cl_host_api
+    graphics/cl_host_compiler
+    graphics/cl_host_commonfns
+    graphics/cl_host_relationals
+    graphics/cl_host_atomics
+    graphics/cl_host_svm
+    graphics/cl_sru_host_thread_dimensions
+    graphics/cl_sru_host_integer_ops
+bootstrap_include:
+    graphics_card
+    executable

@@ -678,3 +678,38 @@ _siblings: [
   { "id": "graphics/vk_classic_ycbcr",
     "_summary": "Run the ycbcr tests from Vulkan-CTS (classic)",
     "command": "vk_host.py run-test --caselist=mustpass/main/vk-default/ycbcr.txt" }]
+
+id: vulkan-core-short-test-plan
+unit: test plan
+_name: Graphics short test plan for verifying Vulkan CTS (core/snap)
+include:
+    setup/install_vulkan_cts
+    graphics/vk_gpu_avail
+    graphics/vk_core_api
+    graphics/vk_core_compute
+    graphics/vk_core_draw
+    graphics/vk_core_glsl
+    graphics/vk_core_memory
+    graphics/vk_core_renderpass
+    graphics/vk_core_synchronization
+bootstrap_include:
+    graphics_card
+    executable
+
+id: vulkan-classic-short-test-plan
+unit: test plan
+_name: Graphics short test plan for verifying Vulkan CTS (classic)
+include:
+    setup/install_vulkan_cts
+    graphics/vk_classic_gpu_avail
+    graphics/vk_classic_vk_avail
+    graphics/vk_classic_api
+    graphics/vk_classic_compute
+    graphics/vk_classic_draw
+    graphics/vk_classic_glsl
+    graphics/vk_classic_memory
+    graphics/vk_classic_renderpass
+    graphics/vk_classic_synchronization
+bootstrap_include:
+    graphics_card
+    executable
