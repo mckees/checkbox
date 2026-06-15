@@ -23,10 +23,10 @@ Host Level Zero helper for Checkbox.
 Subcommands:
   resource          Emit a resource record if a GPU is available via host
                     Level Zero drivers (used by depends:
-                    graphics/lzt_classic_gpu_avail).
+                    graphics/lz_classic_gpu_avail).
   validate-install  Emit a resource record if the host Level Zero ICD loader
                     is installed (used by depends:
-                    graphics/lzt_classic_lzt_avail).
+                    graphics/lz_classic_lz_avail).
   run-test ARGS...  Run a level-zero-tests test binary with --no-confinement,
                     forwarding all remaining arguments to the test.
 """
@@ -108,7 +108,7 @@ def main():
     )
     if len(sys.argv) < 2:
         logging.error(
-            "Usage: lzt_host.py {resource,validate-install,run-test} [args...]"
+            "Usage: lz_host.py {resource,validate-install,run-test} [args...]"
         )
         return 1
     command = sys.argv[1]

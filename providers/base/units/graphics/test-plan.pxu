@@ -525,22 +525,22 @@ bootstrap_include:
     graphics_card
     executable
 
-id: level-zero-tests-core-test-plan
+id: level-zero-core-test-plan
 unit: test plan
 _name: Graphics test plan for verifying Level Zero (core/snap)
 include:
     setup/install_level_zero_tests
-    graphics/lzt_core_.*
+    graphics/lz_core_.*
 bootstrap_include:
     graphics_card
     executable
 
-id: level-zero-tests-classic-test-plan
+id: level-zero-classic-test-plan
 unit: test plan
 _name: Graphics test plan for verifying Level Zero (classic)
 include:
     setup/install_level_zero_tests
-    graphics/lzt_classic_.*
+    graphics/lz_classic_.*
 bootstrap_include:
     graphics_card
     executable
