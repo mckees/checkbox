@@ -1,0 +1,16 @@
+#!/usr/bin/env checkbox-cli
+
+[launcher]
+app_id = com.canonical.certification:vulkan-short
+launcher_version = 1
+stock_reports = text, submission_files
+
+[test plan]
+unit = com.canonical.certification::vulkan-core-short-test-plan
+forced = yes
+
+[test selection]
+forced = yes
+
+[ui]
+output = hide-resource-and-attachment
