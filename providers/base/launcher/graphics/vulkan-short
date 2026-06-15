@@ -1,4 +1,4 @@
-#!/usr/bin/env checkbox-cli
+#!/usr/bin/env checkbox.checkbox-cli
 
 [launcher]
 app_id = com.canonical.certification:vulkan-short
