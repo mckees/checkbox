@@ -18,14 +18,48 @@
 
 """Shared utilities for host Vulkan test helpers."""
 
+import logging
 import os
 import shutil
 import subprocess
 import sysconfig
 
+# Intel PCI vendor ID. Level Zero requires Intel graphics, so its
+# availability gates detect a GPU by matching this vendor in DRM sysfs.
+_INTEL_VENDOR_ID = "0x8086"
+
 
 class VulkanDetectionError(Exception):
     """Raised when a GPU/Vulkan detection step fails."""
+
+
+def has_level_zero_gpu():
+    """Return True if a Level Zero capable (Intel) GPU is present.
+
+    Level Zero requires Intel graphics, so a GPU is detected by probing DRM
+    sysfs for the Intel PCI vendor ID rather than invoking a snap binary.
+    This lets an availability gate run before the level-zero snaps are able
+    to execute a test.
+    """
+    try:
+        entries = sorted(os.listdir("/sys/class/drm"))
+    except OSError as exc:
+        logging.error("Could not read /sys/class/drm: %s", exc)
+        return False
+    for entry in entries:
+        if not entry.startswith("card") or not entry[4:].isdigit():
+            continue
+        vendor_path = "/sys/class/drm/{}/device/vendor".format(entry)
+        try:
+            with open(vendor_path) as f:
+                vid = f.read().strip().lower()
+        except OSError as exc:
+            logging.warning("Could not read %s: %s", vendor_path, exc)
+            continue
+        if vid == _INTEL_VENDOR_ID:
+            logging.info("Found Intel GPU at %s", vendor_path)
+            return True
+    return False
 
 
 def get_arch_triple():

@@ -20,17 +20,8 @@ id: graphics/lz_gpu_avail
 category_id: com.canonical.plainbox::graphics
 user: root
 _summary: Checks for GPU for level-zero-tests
-environ:
-  XDG_SESSION_TYPE
-  XDG_RUNTIME_DIR
 estimated_duration: 1s
-command:
- if level-zero-tests.test test_driver; then
-   echo "PASS: Found a Level Zero GPU"
- else
-   echo "FAIL: No Level Zero GPU found"
-   exit 1
- fi
+command: lz_host.py gpu
 
 id: graphics/lz_core_test_affinity_helper
 depends:
