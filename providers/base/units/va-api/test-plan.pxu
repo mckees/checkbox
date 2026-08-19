@@ -5,6 +5,7 @@ include:
 nested_part:
     va-api-manual
     va-api-automated
+    va-api-automated-gstreamer
 
 id: va-api-manual
 _name: Hardware video acceleration tests (manual)
@@ -13,11 +14,30 @@ include:
 bootstrap_include:
 
 id: va-api-automated
-_name: Hardware video acceleration tests (automated)
+_name: Hardware video acceleration tests (ffmpeg, automated)
 unit: test plan
 include:
     va-api/ffmpeg_hw_vaapi_device
     va-api/ffmpeg_hw_decode_.*
     va-api/ffmpeg_hw_encode_.*
 bootstrap_include:
+    cpuinfo
+    executable
     vaapi_codec
+mandatory_include:
+    com.canonical.plainbox::manifest
+
+id: va-api-automated-gstreamer
+_name: Hardware video acceleration tests (gstreamer, automated)
+unit: test plan
+include:
+    va-api/gstreamer_hw_vaapi_device
+    va-api/gstreamer_hw_decode_.*
+    va-api/gstreamer_hw_encode_.*
+bootstrap_include:
+    cpuinfo
+    executable
+    vaapi_codec
+mandatory_include:
+    com.canonical.plainbox::manifest
+
