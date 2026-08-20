@@ -51,11 +51,11 @@ class TestCommandBuilders(unittest.TestCase):
 
     def test_encode_command(self):
         cmd = m.build_encode_command(
-            "in.mp4", "vaapih264enc", "h264parse", "mp4mux", "o.mp4"
+            "in.mp4", "vah264enc", "h264parse", "mp4mux", "o.mp4"
         )
         self.assertIn("decodebin", cmd)
         self.assertIn("videoconvert", cmd)
-        self.assertIn("vaapih264enc", cmd)
+        self.assertIn("vah264enc", cmd)
         self.assertIn("h264parse", cmd)
         self.assertIn("mp4mux", cmd)
         self.assertIn("location=in.mp4", cmd)
@@ -188,6 +188,16 @@ class TestPerformTest(unittest.TestCase):
     @patch("gstreamer_hw_codec_test.read_trace")
     @patch("gstreamer_hw_codec_test.run_gst")
     @patch("gstreamer_hw_codec_test.os.path.exists", return_value=True)
+    def test_decode_boosts_hw_decoder_rank(self, _exists, run_gst, read_trace):
+        run_gst.return_value = 0
+        read_trace.return_value = "profile = 32\nentrypoint = 1\n"
+        m.perform_test(self._args())
+        extra_env = run_gst.call_args_list[0][0][2]
+        self.assertIn("vajpegdec:512", extra_env["GST_PLUGIN_FEATURE_RANK"])
+
+    @patch("gstreamer_hw_codec_test.read_trace")
+    @patch("gstreamer_hw_codec_test.run_gst")
+    @patch("gstreamer_hw_codec_test.os.path.exists", return_value=True)
     def test_fail_when_hw_not_used(self, _exists, run_gst, read_trace):
         run_gst.return_value = 0
         read_trace.return_value = "nothing here"
@@ -213,7 +223,7 @@ class TestPerformTest(unittest.TestCase):
         args = self._args(
             operation="encode",
             input="av1/foo.mkv",
-            encoder="vaapih264enc",
+            encoder="vah264enc",
             parser="h264parse",
             muxer="mp4mux",
             output_container="mp4",
@@ -222,7 +232,8 @@ class TestPerformTest(unittest.TestCase):
         )
         self.assertEqual(m.perform_test(args), 0)
         built = run_gst.call_args_list[0][0][0]
-        self.assertIn("vaapih264enc", built)
+        self.assertIn("vah264enc", built)
+        self.assertIsNone(run_gst.call_args_list[0][0][2])
 
     @patch("gstreamer_hw_codec_test._check_ssim", return_value=False)
     @patch("gstreamer_hw_codec_test.read_trace")
@@ -236,7 +247,7 @@ class TestPerformTest(unittest.TestCase):
         args = self._args(
             operation="encode",
             input="av1/foo.mkv",
-            encoder="vaapih264enc",
+            encoder="vah264enc",
             parser="h264parse",
             muxer="mp4mux",
             output_container="mp4",
@@ -262,6 +273,24 @@ class TestRunGst(unittest.TestCase):
         self.assertEqual(rc, 0)
         env = sp_run.call_args[1]["env"]
         self.assertEqual(env["LIBVA_TRACE"], "/tmp/libva.trace")
+
+    @patch("gstreamer_hw_codec_test.subprocess.run")
+    def test_applies_extra_env(self, sp_run):
+        sp_run.return_value = MagicMock(returncode=0, stdout="out")
+        m.run_gst(
+            ["gst-launch-1.0", "-q"],
+            "/tmp/libva.trace",
+            {"GST_PLUGIN_FEATURE_RANK": "vajpegdec:512"},
+        )
+        env = sp_run.call_args[1]["env"]
+        self.assertEqual(env["GST_PLUGIN_FEATURE_RANK"], "vajpegdec:512")
+
+
+class TestHwDecoderRankEnv(unittest.TestCase):
+    def test_boosts_all_hw_decoders(self):
+        value = m.hw_decoder_rank_env()
+        for element in m.HW_DECODER_ELEMENTS:
+            self.assertIn("{}:512".format(element), value)
 
 
 if __name__ == "__main__":
