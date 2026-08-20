@@ -37,6 +37,7 @@ include:
 bootstrap_include:
     cpuinfo
     executable
+    package
     vaapi_codec
 mandatory_include:
     com.canonical.plainbox::manifest
