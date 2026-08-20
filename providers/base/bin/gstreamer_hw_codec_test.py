@@ -25,8 +25,10 @@ to the snap mount point ``/snap/media-samples/current/media-samples``.
 Hardware acceleration is confirmed by enabling the libva tracing facility
 (``LIBVA_TRACE``) and inspecting the trace for the expected VAProfile /
 VAEntrypoint pair. For encode, the output is additionally compared against
-the input with ``avvideocompare`` and the resulting SSIM must stay above a
-threshold, catching a hardware encoder that runs but produces garbage.
+the input with ``avvideocompare`` (from ``gstreamer1.0-libav``) and the
+resulting SSIM must stay above a threshold, catching a hardware encoder that
+runs but produces garbage. The encode jobs are gated on ``gstreamer1.0-libav``
+being installed so they skip cleanly when the comparison element is absent.
 """
 
 import argparse
@@ -40,6 +42,33 @@ import tempfile
 DEFAULT_SAMPLES_PATH = "/snap/media-samples/current/media-samples"
 # Minimum acceptable SSIM between the encode input and output.
 SSIM_THRESHOLD = 0.9
+
+# VA-API hardware decoder elements from the modern GStreamer ``va`` plugin.
+# ``decodebin`` auto-plugs the highest-ranked decoder; some of these ship
+# with a rank of ``none`` (notably ``vajpegdec``) so a higher-ranked software
+# decoder would win and the test would wrongly report no hardware use. Boosting
+# their rank forces ``decodebin`` to prefer the hardware path when it is
+# available. Naming a decoder that is not installed (e.g. on systems still
+# using the deprecated ``gstreamer-vaapi`` plugin) is simply ignored.
+HW_DECODER_ELEMENTS = (
+    "vaav1dec",
+    "vah264dec",
+    "vah265dec",
+    "vajpegdec",
+    "vampeg2dec",
+    "vavp8dec",
+    "vavp9dec",
+)
+# Rank comfortably above the software decoders' ``primary`` (256) rank.
+HW_DECODER_RANK = 512
+
+
+def hw_decoder_rank_env():
+    """Return a ``GST_PLUGIN_FEATURE_RANK`` value that prefers HW decoders."""
+    return ",".join(
+        "{}:{}".format(element, HW_DECODER_RANK)
+        for element in HW_DECODER_ELEMENTS
+    )
 
 
 def samples_root():
@@ -61,9 +90,10 @@ def resolve_sample(relative_path):
 def build_decode_command(input_file):
     """Build the gst-launch pipeline for a hardware decode test.
 
-    ``decodebin`` auto-plugs the highest-ranked decoder, which is the VAAPI
-    hardware decoder when gstreamer-vaapi is installed, and the decoded
-    frames are dropped into a ``fakevideosink``.
+    ``decodebin`` auto-plugs the highest-ranked decoder. The caller boosts the
+    VA-API decoders' rank (see :func:`hw_decoder_rank_env`) so the hardware
+    decoder is preferred, and the decoded frames are dropped into a
+    ``fakevideosink``.
     """
     return [
         "gst-launch-1.0",
@@ -81,8 +111,8 @@ def build_decode_command(input_file):
 def build_encode_command(input_file, encoder, parser, muxer, output_file):
     """Build the gst-launch pipeline for a hardware encode test.
 
-    The input is decoded and converted in software then fed to the VAAPI
-    hardware ``encoder`` (e.g. ``vaapih264enc``), parsed and muxed into the
+    The input is decoded and converted in software then fed to the VA-API
+    hardware ``encoder`` (e.g. ``vah264enc``), parsed and muxed into the
     output container so the test exercises the hardware *encoder* in
     isolation, independent of whether the input codec can be hardware
     *decoded*.
@@ -204,10 +234,12 @@ def parse_min_ssim(stats_text):
     return min(values)
 
 
-def run_gst(command, trace_prefix):
+def run_gst(command, trace_prefix, extra_env=None):
     """Run gst-launch with libva tracing enabled and return the exit code."""
     env = dict(os.environ)
     env["LIBVA_TRACE"] = trace_prefix
+    if extra_env:
+        env.update(extra_env)
     print("+ {}".format(" ".join(command)))
     result = subprocess.run(
         command,
@@ -280,6 +312,7 @@ def perform_test(args):
     if args.operation == "decode":
         output_file = None
         command = build_decode_command(input_file)
+        extra_env = {"GST_PLUGIN_FEATURE_RANK": hw_decoder_rank_env()}
     else:
         output_file = os.path.join(
             workdir, "out.{}".format(args.output_container)
@@ -287,9 +320,10 @@ def perform_test(args):
         command = build_encode_command(
             input_file, args.encoder, args.parser, args.muxer, output_file
         )
+        extra_env = None
 
     try:
-        gst_status = run_gst(command, trace_prefix)
+        gst_status = run_gst(command, trace_prefix, extra_env)
         trace_text = read_trace(trace_prefix)
         hw_used = hw_acceleration_used(
             trace_text, args.profile, args.entrypoint
@@ -350,7 +384,7 @@ def parse_args(argv):
     )
     parser.add_argument(
         "--encoder",
-        help="gstreamer encode element for encode (e.g. vaapih264enc)",
+        help="gstreamer encode element for encode (e.g. vah264enc)",
     )
     parser.add_argument(
         "--parser",
