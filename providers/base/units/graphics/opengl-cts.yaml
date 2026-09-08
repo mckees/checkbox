@@ -23,10 +23,11 @@ environ:
   - DISPLAY
 estimated_duration: 1s
 command: |
-  if opengl-cts.glxinfo 2>&1 | grep "OpenGL renderer string" | grep -qiv "llvmpipe\|softpipe\|swrast"; then
+  if opengl-cts.eglinfo 2>&1 | grep "renderer:" | grep -qiv "llvmpipe\|softpipe\|swrast"; then
     echo "PASS: Found an OpenGL-capable GPU"
   else
     echo "FAIL: No OpenGL-capable GPU found"
+    opengl-cts.eglinfo 2>&1
     exit 1
   fi
 ---
