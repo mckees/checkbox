@@ -814,3 +814,42 @@ include:
 bootstrap_include:
   - graphics_card
   - executable
+---
+id: opengl-core-short-test-plan
+unit: test plan
+name: Graphics short test plan for verifying OpenGL CTS (core/snap)
+include:
+  - setup/install_opengl_cts
+  - graphics/gl_gpu_avail
+  - graphics/gl_core_info
+  - graphics/gl_core_shaders
+  - graphics/gl_core_geometry_shader
+  - graphics/gl_core_gpu_shader5
+  - graphics/gl_core_tessellation_shader
+  - graphics/gl_core_texture_cube_map_array
+  - graphics/gl_core_copy_image
+  - graphics/gl_core_texture_compatibility
+  - graphics/gl_core_compressed_format
+bootstrap_include:
+  - graphics_card
+  - executable
+---
+id: opengl-classic-short-test-plan
+unit: test plan
+name: Graphics short test plan for verifying OpenGL CTS (classic)
+include:
+  - setup/install_opengl_cts
+  - graphics/gl_classic_gpu_avail
+  - graphics/gl_classic_gl_avail
+  - graphics/gl_classic_info
+  - graphics/gl_classic_shaders
+  - graphics/gl_classic_geometry_shader
+  - graphics/gl_classic_gpu_shader5
+  - graphics/gl_classic_tessellation_shader
+  - graphics/gl_classic_texture_cube_map_array
+  - graphics/gl_classic_copy_image
+  - graphics/gl_classic_texture_compatibility
+  - graphics/gl_classic_compressed_format
+bootstrap_include:
+  - graphics_card
+  - executable
