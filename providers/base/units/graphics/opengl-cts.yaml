@@ -16,6 +16,7 @@ unit: job
 plugin: shell
 id: graphics/gl_gpu_avail
 category_id: com.canonical.plainbox::graphics
+user: root
 summary: Checks for OpenGL-capable GPU
 environ:
   - XDG_SESSION_TYPE
@@ -37,6 +38,7 @@ depends:
 category_id: com.canonical.plainbox::graphics
 flags:
   - simple
+user: root
 summary: Run the info tests from OpenGL-CTS (core)
 environ:
   - XDG_SESSION_TYPE
