@@ -5,6 +5,7 @@ include: []
 nested_part:
   - va-api-manual
   - va-api-automated
+  - va-api-automated-gstreamer
 ---
 id: va-api-manual
 name: Hardware video acceleration tests (manual)
@@ -13,7 +14,7 @@ include: []
 bootstrap_include: []
 ---
 id: va-api-automated
-name: Hardware video acceleration tests (automated)
+name: Hardware video acceleration tests (ffmpeg, automated)
 unit: test plan
 include:
   - va-api/va-initialize
@@ -23,5 +24,19 @@ include:
   - va-api/ffmpeg_hw_vaapi_device
   - va-api/ffmpeg_hw_decode_.*
   - va-api/ffmpeg_hw_encode_.*
+bootstrap_include:
+  - va-api/vainfo
+---
+id: va-api-automated-gstreamer
+name: Hardware video acceleration tests (gstreamer, automated)
+unit: test plan
+include:
+  - va-api/va-initialize
+  - va-api/va-profile-.*
+  - va-api/va-manifest-vs-driver
+  - setup/install_media_samples
+  - va-api/gstreamer_hw_vaapi_device
+  - va-api/gstreamer_hw_decode_.*
+  - va-api/gstreamer_hw_encode_.*
 bootstrap_include:
   - va-api/vainfo
