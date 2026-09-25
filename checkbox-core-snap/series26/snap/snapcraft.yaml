@@ -337,6 +337,7 @@ parts:
       - glmark2-wayland
       - glmark2-es2-wayland
       - gstreamer1.0-tools
+      - gstreamer1.0-libav
       - gstreamer1.0-plugins-bad
       - gstreamer1.0-pulseaudio
       - hdparm
