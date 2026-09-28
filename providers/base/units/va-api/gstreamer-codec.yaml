@@ -41,6 +41,7 @@ command: |
 id: va-api/gstreamer_hw_decode_av1_1080p_mkv
 depends:
   - va-api/gstreamer_hw_vaapi_device
+  - setup/install_media_samples
 category_id: va-api
 flags:
   - simple
@@ -351,6 +352,7 @@ siblings:
 id: va-api/gstreamer_hw_encode_h264_1080p
 depends:
   - va-api/gstreamer_hw_vaapi_device
+  - setup/install_media_samples
 category_id: va-api
 flags:
   - simple
