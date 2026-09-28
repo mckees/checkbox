@@ -27,8 +27,9 @@ Hardware acceleration is confirmed by enabling the libva tracing facility
 VAEntrypoint pair. For encode, the output is additionally compared against
 the input with ``avvideocompare`` (from ``gstreamer1.0-libav``) and the
 resulting SSIM must stay above a threshold, catching a hardware encoder that
-runs but produces garbage. The encode jobs are gated on ``gstreamer1.0-libav``
-being installed so they skip cleanly when the comparison element is absent.
+runs but produces garbage. If ``avvideocompare`` is not available to the
+``gst-launch-1.0`` running the test, no SSIM statistics are produced and the
+encode test fails.
 """
 
 import argparse
