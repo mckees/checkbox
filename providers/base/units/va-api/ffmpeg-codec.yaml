@@ -14,11 +14,19 @@ category_id: va-api
 summary: Install media-samples snap
 user: root
 command: |
-  if snap list media-samples &>/dev/null; then
-    snap refresh --beta media-samples
-  else
-    snap install --beta media-samples
-  fi
+  rev="$(snap list media-samples 2>/dev/null | awk 'NR == 2 {print $3}')"
+  case "$rev" in
+    "")
+      snap install --beta media-samples
+      ;;
+    x*)
+      # Local (unasserted) installs cannot be refreshed from the store
+      echo "Using locally installed media-samples (revision $rev)"
+      ;;
+    *)
+      snap refresh --beta media-samples
+      ;;
+  esac
 estimated_duration: 1m
 ---
 unit: job
