@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2024 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # Written by:
 #   Shane McKee <shane.mckee@canonical.com>
 #
@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import tempfile
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -103,22 +104,13 @@ class TestParseMinSsim(unittest.TestCase):
 
 class TestReadTrace(unittest.TestCase):
     def test_reads_and_concatenates(self):
-        import tempfile
-
-        d = tempfile.mkdtemp()
-        prefix = os.path.join(d, "libva.trace")
-        with open(prefix + ".111", "w") as f:
-            f.write("a")
-        with open(prefix + ".222", "w") as f:
-            f.write("b")
-        try:
-            text = m.read_trace(prefix)
-            self.assertIn("a", text)
-            self.assertIn("b", text)
-        finally:
-            for p in (prefix + ".111", prefix + ".222"):
-                os.remove(p)
-            os.rmdir(d)
+        with tempfile.TemporaryDirectory() as d:
+            prefix = os.path.join(d, "libva.trace")
+            with open(prefix + ".111", "w") as f:
+                f.write("a")
+            with open(prefix + ".222", "w") as f:
+                f.write("b")
+            self.assertEqual(m.read_trace(prefix), "a\nb")
 
     def test_missing_files_returns_empty(self):
         self.assertEqual(m.read_trace("/nonexistent/libva.trace"), "")

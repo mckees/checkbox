@@ -2,9 +2,11 @@
 # Sample media files are provided by the media-samples snap; set
 # MEDIA_SAMPLES_PATH to override the default snap mount location.
 #
-# These tests use the DRM render node directly (headless), so they gate
-# on their own render-node VA-API check rather than the display-based
-# va-api/va-initialize job.
+# These tests use the DRM render node directly (headless), so they gate on
+# a render-node VA-API check rather than the display-based va-api/va-initialize
+# job. Which codec jobs run is decided by the va-api/vainfo resource (from
+# va_profile_check.py), matching each job to the VAProfile and direction the
+# driver actually advertises.
 unit: job
 plugin: shell
 id: va-api/gstreamer_hw_vaapi_device
