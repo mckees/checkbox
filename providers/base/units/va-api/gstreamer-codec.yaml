@@ -26,15 +26,13 @@ environ:
   - LIBVA_DRIVER_NAME
 estimated_duration: 5s
 command: |
-  device="${VAAPI_DEVICE:-/dev/dri/renderD128}"
-  if [ ! -e "$device" ]; then
-    echo "FAIL: VA-API render node $device not found"
-    exit 1
+  if [ -n "${VAAPI_DEVICE:-}" ]; then
+    set -- --device "$VAAPI_DEVICE"
   fi
-  if vainfo --display drm --device "$device"; then
-    echo "PASS: VA-API usable on $device"
+  if vainfo --display drm "$@"; then
+    echo "PASS: VA-API usable on ${VAAPI_DEVICE:-the default render node}"
   else
-    echo "FAIL: vainfo could not initialise VA-API on $device"
+    echo "FAIL: vainfo could not initialise VA-API on ${VAAPI_DEVICE:-the default render node}"
     exit 1
   fi
 ---
@@ -54,7 +52,6 @@ user: root
 summary: gstreamer VAAPI hardware decode of AV1 1080p video
 environ:
   - MEDIA_SAMPLES_PATH
-  - VAAPI_DEVICE
   - LIBVA_DRIVER_NAME
   - GST_PLUGIN_PATH
 estimated_duration: 1m
@@ -366,7 +363,6 @@ user: root
 summary: gstreamer VAAPI hardware encode to H264 1080p video
 environ:
   - MEDIA_SAMPLES_PATH
-  - VAAPI_DEVICE
   - LIBVA_DRIVER_NAME
   - GST_PLUGIN_PATH
 estimated_duration: 1m
