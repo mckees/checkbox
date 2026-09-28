@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2024 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # Written by:
 #   Shane McKee <shane.mckee@canonical.com>
 #
@@ -83,8 +83,6 @@ def resolve_sample(relative_path):
     Absolute paths are returned unchanged so the helper can also be pointed
     at an arbitrary file for local debugging.
     """
-    if os.path.isabs(relative_path):
-        return relative_path
     return os.path.join(samples_root(), relative_path)
 
 
@@ -194,11 +192,8 @@ def read_trace(trace_prefix):
     """
     contents = []
     for path in sorted(glob.glob(trace_prefix + "*")):
-        try:
-            with open(path, "r", errors="replace") as handle:
-                contents.append(handle.read())
-        except OSError:
-            continue
+        with open(path, "r", errors="replace") as handle:
+            contents.append(handle.read())
     return "\n".join(contents)
 
 
@@ -254,31 +249,18 @@ def run_gst(command, trace_prefix, extra_env=None):
     return result.returncode
 
 
-def _silent_remove(path, is_dir=False):
-    try:
-        if is_dir:
-            os.rmdir(path)
-        else:
-            os.remove(path)
-    except OSError:
-        pass
-
-
 def _check_ssim(input_file, output_file, workdir, trace_prefix):
     """Compare input and output with SSIM and return True on success."""
     if not os.path.exists(output_file):
         print("---- [FAIL] no encode output produced to compare")
         return False
     stats_file = os.path.join(workdir, "ssim.log")
-    try:
-        command = build_compare_command(input_file, output_file, stats_file)
-        run_gst(command, trace_prefix)
-        stats_text = ""
-        if os.path.exists(stats_file):
-            with open(stats_file, "r", errors="replace") as handle:
-                stats_text = handle.read()
-    finally:
-        _silent_remove(stats_file)
+    command = build_compare_command(input_file, output_file, stats_file)
+    run_gst(command, trace_prefix)
+    stats_text = ""
+    if os.path.exists(stats_file):
+        with open(stats_file, "r", errors="replace") as handle:
+            stats_text = handle.read()
 
     min_ssim = parse_min_ssim(stats_text)
     if min_ssim is None:
@@ -306,39 +288,28 @@ def perform_test(args):
         print("[FAIL] input sample not found: {}".format(input_file))
         return 1
 
-    workdir = tempfile.mkdtemp(prefix="media_hw_codec_")
-    trace_prefix = os.path.join(workdir, "libva.trace")
     ssim_ok = True
-
-    if args.operation == "decode":
-        output_file = None
-        command = build_decode_command(input_file)
-        extra_env = {"GST_PLUGIN_FEATURE_RANK": hw_decoder_rank_env()}
-    else:
-        output_file = os.path.join(
-            workdir, "out.{}".format(args.output_container)
-        )
-        command = build_encode_command(
-            input_file, args.encoder, args.parser, args.muxer, output_file
-        )
-        extra_env = None
-
-    try:
+    with tempfile.TemporaryDirectory(prefix="media_hw_codec_") as workdir:
+        trace_prefix = os.path.join(workdir, "libva.trace")
+        if args.operation == "decode":
+            command = build_decode_command(input_file)
+            extra_env = {"GST_PLUGIN_FEATURE_RANK": hw_decoder_rank_env()}
+        else:
+            output_file = os.path.join(
+                workdir, "out.{}".format(args.output_container)
+            )
+            command = build_encode_command(
+                input_file, args.encoder, args.parser, args.muxer, output_file
+            )
+            extra_env = None
         gst_status = run_gst(command, trace_prefix, extra_env)
-        trace_text = read_trace(trace_prefix)
         hw_used = hw_acceleration_used(
-            trace_text, args.profile, args.entrypoint
+            read_trace(trace_prefix), args.profile, args.entrypoint
         )
         if args.operation == "encode" and gst_status == 0:
             ssim_ok = _check_ssim(
                 input_file, output_file, workdir, trace_prefix
             )
-    finally:
-        for path in glob.glob(trace_prefix + "*"):
-            _silent_remove(path)
-        if output_file is not None:
-            _silent_remove(output_file)
-        _silent_remove(workdir, is_dir=True)
 
     if hw_used:
         print("---- [PASS] using HW {}".format(args.operation))
