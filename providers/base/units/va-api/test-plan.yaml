@@ -6,6 +6,7 @@ nested_part:
   - va-api-manual
   - va-api-automated
   - va-api-automated-gstreamer
+  - va-api-firefox
 ---
 id: va-api-manual
 name: Hardware video acceleration tests (manual)
@@ -40,3 +41,11 @@ include:
   - va-api/gstreamer_hw_encode_.*
 bootstrap_include:
   - va-api/vainfo
+---
+id: va-api-firefox
+name: Hardware video acceleration tests (Firefox, needs a desktop session)
+unit: test plan
+include:
+  - setup/install_media_samples
+  - va-api/firefox_hw_decode_.*
+bootstrap_include: []
