@@ -20,7 +20,7 @@ flags:
 imports:
   - from com.canonical.plainbox import manifest
 requires:
-  - executable.name == 'firefox'
+  - snap.name == 'firefox'
   - desktop_session.desktop_session == 'True'
   - manifest.has_av1_profile0_decoder == 'True'
 summary: Firefox VAAPI hardware decode of AV1 180p video
@@ -39,202 +39,202 @@ siblings:
     summary: Firefox VAAPI hardware decode of AV1 360p video
     command: firefox_hw_codec_test.py av1/bbb_sunflower_360p_30fps_normal_av1.mp4 --profile 32
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_av1_profile0_decoder == 'True'
   - id: va-api/firefox_hw_decode_av1_480p_mp4
     summary: Firefox VAAPI hardware decode of AV1 480p video
     command: firefox_hw_codec_test.py av1/bbb_sunflower_480p_30fps_normal_av1.mp4 --profile 32
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_av1_profile0_decoder == 'True'
   - id: va-api/firefox_hw_decode_av1_720p_mp4
     summary: Firefox VAAPI hardware decode of AV1 720p video
     command: firefox_hw_codec_test.py av1/bbb_sunflower_720p_30fps_normal_av1.mp4 --profile 32
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_av1_profile0_decoder == 'True'
   - id: va-api/firefox_hw_decode_av1_1080p_webm
     summary: Firefox VAAPI hardware decode of AV1 1080p video
     command: firefox_hw_codec_test.py av1/bbb_sunflower_1080p_30fps_normal_AV1.webm --profile 32
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_av1_profile0_decoder == 'True'
   - id: va-api/firefox_hw_decode_av1_2160p_webm
     summary: Firefox VAAPI hardware decode of AV1 4K video
     command: firefox_hw_codec_test.py av1/bbb_sunflower_2160p_30fps_normal_AV1.webm --profile 32
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_av1_profile0_decoder == 'True'
   - id: va-api/firefox_hw_decode_h264_180p_mp4
     summary: Firefox VAAPI hardware decode of H264 180p video
     command: firefox_hw_codec_test.py h264/bbb_sunflower_180p_30fps_normal_h264.mp4 --profile 7
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_h264_high_decoder == 'True'
   - id: va-api/firefox_hw_decode_h264_360p_mp4
     summary: Firefox VAAPI hardware decode of H264 360p video
     command: firefox_hw_codec_test.py h264/bbb_sunflower_360p_30fps_normal_h264.mp4 --profile 7
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_h264_high_decoder == 'True'
   - id: va-api/firefox_hw_decode_h264_480p_mp4
     summary: Firefox VAAPI hardware decode of H264 480p video
     command: firefox_hw_codec_test.py h264/bbb_sunflower_480p_30fps_normal_h264.mp4 --profile 7
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_h264_high_decoder == 'True'
   - id: va-api/firefox_hw_decode_h264_720p_mp4
     summary: Firefox VAAPI hardware decode of H264 720p video
     command: firefox_hw_codec_test.py h264/bbb_sunflower_720p_30fps_normal_h264.mp4 --profile 7
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_h264_high_decoder == 'True'
   - id: va-api/firefox_hw_decode_h264_1080p_mp4
     summary: Firefox VAAPI hardware decode of H264 1080p video
     command: firefox_hw_codec_test.py h264/bbb_sunflower_1080p_30fps_normal_h264.mp4 --profile 7
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_h264_high_decoder == 'True'
   - id: va-api/firefox_hw_decode_h264_2160p_mp4
     summary: Firefox VAAPI hardware decode of H264 4K video
     command: firefox_hw_codec_test.py h264/bbb_sunflower_2160p_30fps_normal_h264.mp4 --profile 7
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_h264_high_decoder == 'True'
   - id: va-api/firefox_hw_decode_h265_180p_mp4
     summary: Firefox VAAPI hardware decode of H265 180p video
     command: firefox_hw_codec_test.py h265/bbb_sunflower_180p_30fps_normal_h265.mp4 --profile 17
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_hevc_main_decoder == 'True'
   - id: va-api/firefox_hw_decode_h265_360p_mp4
     summary: Firefox VAAPI hardware decode of H265 360p video
     command: firefox_hw_codec_test.py h265/bbb_sunflower_360p_30fps_normal_h265.mp4 --profile 17
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_hevc_main_decoder == 'True'
   - id: va-api/firefox_hw_decode_h265_480p_mp4
     summary: Firefox VAAPI hardware decode of H265 480p video
     command: firefox_hw_codec_test.py h265/bbb_sunflower_480p_30fps_normal_h265.mp4 --profile 17
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_hevc_main_decoder == 'True'
   - id: va-api/firefox_hw_decode_h265_720p_mp4
     summary: Firefox VAAPI hardware decode of H265 720p video
     command: firefox_hw_codec_test.py h265/bbb_sunflower_720p_30fps_normal_h265.mp4 --profile 17
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_hevc_main_decoder == 'True'
   - id: va-api/firefox_hw_decode_h265_1080p_mp4
     summary: Firefox VAAPI hardware decode of H265 1080p video
     command: firefox_hw_codec_test.py h265/bbb_sunflower_1080p_30fps_normal_h265.mp4 --profile 17
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_hevc_main_decoder == 'True'
   - id: va-api/firefox_hw_decode_h265_2160p_mp4
     summary: Firefox VAAPI hardware decode of H265 4K video
     command: firefox_hw_codec_test.py h265/bbb_sunflower_2160p_30fps_normal_h265.mp4 --profile 17
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_hevc_main_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp8_180p_webm
     summary: Firefox VAAPI hardware decode of VP8 180p video
     command: firefox_hw_codec_test.py vp8/bbb_sunflower_180p_30fps_normal_vp8.webm --profile 14
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp8_version0_3_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp8_360p_webm
     summary: Firefox VAAPI hardware decode of VP8 360p video
     command: firefox_hw_codec_test.py vp8/bbb_sunflower_360p_30fps_normal_vp8.webm --profile 14
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp8_version0_3_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp8_480p_webm
     summary: Firefox VAAPI hardware decode of VP8 480p video
     command: firefox_hw_codec_test.py vp8/bbb_sunflower_480p_30fps_normal_vp8.webm --profile 14
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp8_version0_3_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp8_720p_webm
     summary: Firefox VAAPI hardware decode of VP8 720p video
     command: firefox_hw_codec_test.py vp8/bbb_sunflower_720p_30fps_normal_vp8.webm --profile 14
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp8_version0_3_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp8_1080p_webm
     summary: Firefox VAAPI hardware decode of VP8 1080p video
     command: firefox_hw_codec_test.py vp8/bbb_sunflower_1080p_30fps_normal_vp8.webm --profile 14
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp8_version0_3_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp8_2160p_webm
     summary: Firefox VAAPI hardware decode of VP8 4K video
     command: firefox_hw_codec_test.py vp8/bbb_sunflower_2160p_30fps_normal_vp8.webm --profile 14
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp8_version0_3_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp9_180p_webm
     summary: Firefox VAAPI hardware decode of VP9 180p video
     command: firefox_hw_codec_test.py vp9/bbb_sunflower_180p_30fps_normal_vp9.webm --profile 19
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp9_profile0_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp9_360p_webm
     summary: Firefox VAAPI hardware decode of VP9 360p video
     command: firefox_hw_codec_test.py vp9/bbb_sunflower_360p_30fps_normal_vp9.webm --profile 19
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp9_profile0_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp9_480p_webm
     summary: Firefox VAAPI hardware decode of VP9 480p video
     command: firefox_hw_codec_test.py vp9/bbb_sunflower_480p_30fps_normal_vp9.webm --profile 19
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp9_profile0_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp9_720p_webm
     summary: Firefox VAAPI hardware decode of VP9 720p video
     command: firefox_hw_codec_test.py vp9/bbb_sunflower_720p_30fps_normal_vp9.webm --profile 19
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp9_profile0_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp9_1080p_webm
     summary: Firefox VAAPI hardware decode of VP9 1080p video
     command: firefox_hw_codec_test.py vp9/bbb_sunflower_1080p_30fps_normal_VP9.webm --profile 19
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp9_profile0_decoder == 'True'
   - id: va-api/firefox_hw_decode_vp9_2160p_webm
     summary: Firefox VAAPI hardware decode of VP9 4K video
     command: firefox_hw_codec_test.py vp9/bbb_sunflower_2160p_60fps_normal_VP9.webm --profile 19
     requires:
-      - executable.name == 'firefox'
+      - snap.name == 'firefox'
       - desktop_session.desktop_session == 'True'
       - manifest.has_vp9_profile0_decoder == 'True'

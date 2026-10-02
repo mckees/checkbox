@@ -19,7 +19,6 @@ import os
 import subprocess
 import tempfile
 import unittest
-import urllib.request
 from unittest.mock import MagicMock, patch
 
 import firefox_hw_codec_test as m
@@ -36,47 +35,17 @@ PROBE_TRACE = (
 )
 
 
-class TestIsSnap(unittest.TestCase):
-    @patch("firefox_hw_codec_test.shutil.which", return_value=None)
-    def test_missing(self, _which):
-        self.assertFalse(m.is_snap("firefox"))
-
-    @patch("firefox_hw_codec_test.os.path.realpath")
-    @patch("firefox_hw_codec_test.shutil.which")
-    def test_snap_bin(self, which, realpath):
-        which.return_value = "/snap/bin/firefox"
-        realpath.return_value = "/usr/bin/snap"
-        self.assertTrue(m.is_snap("firefox"))
-
-    @patch("firefox_hw_codec_test.os.path.realpath")
-    @patch("firefox_hw_codec_test.shutil.which")
-    def test_deb(self, which, realpath):
-        which.return_value = "/usr/bin/firefox"
-        realpath.return_value = "/usr/lib/firefox/firefox.sh"
-        self.assertFalse(m.is_snap("firefox"))
-
-
 class TestMakeWorkdir(unittest.TestCase):
-    def test_snap_uses_snap_user_data(self):
+    def test_uses_snap_user_data(self):
         with tempfile.TemporaryDirectory() as home:
-            with patch.dict(os.environ, {"HOME": home}), patch(
-                "firefox_hw_codec_test.is_snap", return_value=True
-            ):
-                workdir = m.make_workdir("firefox")
+            with patch.dict(os.environ, {"HOME": home}):
+                workdir = m.make_workdir()
             self.assertTrue(
                 workdir.startswith(
                     os.path.join(home, "snap", "firefox", "common")
                 )
             )
             self.assertTrue(os.path.isdir(workdir))
-
-    def test_non_snap_uses_tmp(self):
-        with patch("firefox_hw_codec_test.is_snap", return_value=False):
-            workdir = m.make_workdir("/usr/bin/firefox")
-        try:
-            self.assertTrue(os.path.isdir(workdir))
-        finally:
-            os.rmdir(workdir)
 
 
 class TestFiles(unittest.TestCase):
@@ -91,28 +60,11 @@ class TestFiles(unittest.TestCase):
     def test_write_page(self):
         with tempfile.TemporaryDirectory() as tmp:
             page = os.path.join(tmp, "play.html")
-            m.write_page(page, "http://127.0.0.1:1/h264/a.mp4")
+            m.write_page(page, "a.mp4")
             with open(page) as handle:
                 html = handle.read()
-        self.assertIn('src="http://127.0.0.1:1/h264/a.mp4"', html)
+        self.assertIn('src="a.mp4"', html)
         self.assertIn("autoplay muted loop", html)
-
-
-class TestServer(unittest.TestCase):
-    def test_serves_directory(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            with open(os.path.join(tmp, "a.txt"), "w") as handle:
-                handle.write("sample")
-            server = m.start_server(tmp)
-            try:
-                url = "http://127.0.0.1:{}/a.txt".format(
-                    server.server_address[1]
-                )
-                with urllib.request.urlopen(url) as response:
-                    self.assertEqual(response.read(), b"sample")
-            finally:
-                server.shutdown()
-                server.server_close()
 
 
 class TestFirefoxEnvAndCommand(unittest.TestCase):
@@ -125,9 +77,9 @@ class TestFirefoxEnvAndCommand(unittest.TestCase):
 
     def test_command(self):
         self.assertEqual(
-            m.build_firefox_command("firefox", "/w/profile", "/w/play.html"),
+            m.build_firefox_command("/w/profile", "/w/play.html"),
             [
-                "firefox",
+                "/snap/bin/firefox",
                 "--new-instance",
                 "--no-remote",
                 "--profile",
@@ -240,7 +192,6 @@ class TestPerformTest(unittest.TestCase):
             input="h264/a.mp4",
             profile="7",
             entrypoint="1",
-            firefox="firefox",
             duration=1,
             min_frames=30,
         )
@@ -251,6 +202,15 @@ class TestPerformTest(unittest.TestCase):
         with patch.object(m.os.path, "exists", return_value=False):
             self.assertEqual(m.perform_test(self._args()), 1)
 
+    def test_missing_firefox_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            open(os.path.join(tmp, "a.mp4"), "w").close()
+            with patch.dict(os.environ, {"MEDIA_SAMPLES_PATH": tmp}), patch(
+                "firefox_hw_codec_test.FIREFOX", os.path.join(tmp, "missing")
+            ), patch("firefox_hw_codec_test.has_display") as display:
+                self.assertEqual(m.perform_test(self._args(input="a.mp4")), 1)
+            display.assert_not_called()
+
     @patch("firefox_hw_codec_test.has_display", return_value=False)
     @patch("firefox_hw_codec_test.os.path.exists", return_value=True)
     def test_no_display_fails(self, _exists, _display):
@@ -258,21 +218,32 @@ class TestPerformTest(unittest.TestCase):
 
     def _run(self, run_status, traces):
         with tempfile.TemporaryDirectory() as tmp:
+            os.mkdir(os.path.join(tmp, "h264"))
+            with open(os.path.join(tmp, "h264", "a.mp4"), "w") as handle:
+                handle.write("sample")
             workdir = os.path.join(tmp, "work")
             os.mkdir(workdir)
+            copied = os.path.join(workdir, "a.mp4")
+            sample_present = []
+            run_firefox = MagicMock(
+                side_effect=lambda *a: (
+                    sample_present.append(os.path.exists(copied)) or run_status
+                )
+            )
             with patch.dict(os.environ, {"MEDIA_SAMPLES_PATH": tmp}), patch(
-                "firefox_hw_codec_test.os.path.exists", return_value=True
+                "firefox_hw_codec_test.FIREFOX", tmp
             ), patch(
                 "firefox_hw_codec_test.has_display", return_value=True
             ), patch(
                 "firefox_hw_codec_test.make_workdir", return_value=workdir
             ), patch(
-                "firefox_hw_codec_test.run_firefox", return_value=run_status
+                "firefox_hw_codec_test.run_firefox", run_firefox
             ) as run, patch(
                 "firefox_hw_codec_test.decode_traces", return_value=traces
             ):
                 result = m.perform_test(self._args())
             self.assertFalse(os.path.exists(workdir))
+            self.assertEqual(sample_present, [True])
             command, env, duration = run.call_args[0]
             self.assertIn("--profile", command)
             self.assertEqual(env["MOZ_DISABLE_RDD_SANDBOX"], "1")
@@ -292,7 +263,6 @@ class TestArgs(unittest.TestCase):
     def test_defaults(self):
         args = m.parse_args(["h264/a.mp4", "--profile", "7"])
         self.assertEqual(args.entrypoint, "1")
-        self.assertEqual(args.firefox, "firefox")
         self.assertEqual(args.duration, m.DEFAULT_DURATION)
         self.assertEqual(args.min_frames, m.DEFAULT_MIN_FRAMES)
 

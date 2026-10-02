@@ -16,10 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Exercise VAAPI hardware video decode in Firefox.
 
-A media sample from the ``media-samples`` snap is served over a local HTTP
-server (the Firefox snap cannot read other snaps' files) and played in a
-muted, looping ``<video>`` element in a fresh Firefox profile for a fixed
-time. The base directory holding the samples can be overridden with the
+The Firefox snap is used. It can only read its own snap user data, not
+other snaps' files, so the media sample from the ``media-samples`` snap is
+copied into ``~/snap/firefox/common`` and played from there in a muted,
+looping ``<video>`` element in a fresh Firefox profile for a fixed time. The
+base directory holding the samples can be overridden with the
 ``MEDIA_SAMPLES_PATH`` environment variable.
 
 Firefox only enables VA-API decode once its GPU compositor is up, so this
@@ -35,9 +36,7 @@ VAProfile/VAEntrypoint pair and at least ``--min-frames`` pictures.
 """
 
 import argparse
-import functools
 import glob
-import http.server
 import os
 import re
 import shutil
@@ -45,9 +44,9 @@ import signal
 import subprocess
 import sys
 import tempfile
-import threading
 
 DEFAULT_SAMPLES_PATH = "/snap/media-samples/current/media-samples"
+FIREFOX = "/snap/bin/firefox"
 # How many seconds to let Firefox play the sample for.
 DEFAULT_DURATION = 20
 # Minimum number of pictures that must go through the hardware decoder.
@@ -67,7 +66,7 @@ USER_PREFS = (
 PAGE_TEMPLATE = """<!DOCTYPE html>
 <html>
 <body style="margin:0;background:black">
-<video src="{url}" autoplay muted loop style="width:100%;height:100%">
+<video src="{src}" autoplay muted loop style="width:100%;height:100%">
 </video>
 </body>
 </html>
@@ -79,31 +78,15 @@ def samples_root():
     return os.environ.get("MEDIA_SAMPLES_PATH", DEFAULT_SAMPLES_PATH)
 
 
-def is_snap(executable):
-    """Return True if ``executable`` is provided by a snap."""
-    path = shutil.which(executable)
-    if not path:
-        return False
-    real = os.path.realpath(path)
-    return path.startswith("/snap/") or real in (
-        "/usr/bin/snap",
-        "/snap/bin/snap",
-    )
+def make_workdir():
+    """Create a scratch directory the Firefox snap can read and write.
 
-
-def make_workdir(firefox):
-    """Create a scratch directory that ``firefox`` is allowed to write to.
-
-    The Firefox snap can only write to its own snap user data, so the
-    profile and libva traces must live under ``~/snap/firefox/common``.
+    The profile, page, sample and libva traces must all live in the
+    snap's user data under ``~/snap/firefox/common``.
     """
-    if is_snap(firefox):
-        parent = os.path.join(
-            os.path.expanduser("~"), "snap", "firefox", "common"
-        )
-        os.makedirs(parent, exist_ok=True)
-        return tempfile.mkdtemp(prefix="checkbox-va-", dir=parent)
-    return tempfile.mkdtemp(prefix="checkbox-va-")
+    parent = os.path.join(os.path.expanduser("~"), "snap", "firefox", "common")
+    os.makedirs(parent, exist_ok=True)
+    return tempfile.mkdtemp(prefix="checkbox-va-", dir=parent)
 
 
 def write_profile(profile_dir):
@@ -114,24 +97,10 @@ def write_profile(profile_dir):
             handle.write('user_pref("{}", {});\n'.format(name, value))
 
 
-def write_page(path, url):
-    """Write the HTML page that plays the sample at ``url``."""
+def write_page(path, src):
+    """Write the HTML page that plays the sample at ``src``."""
     with open(path, "w") as handle:
-        handle.write(PAGE_TEMPLATE.format(url=url))
-
-
-class _QuietHandler(http.server.SimpleHTTPRequestHandler):
-    def log_message(self, format, *args):
-        pass
-
-
-def start_server(directory):
-    """Serve ``directory`` on a free localhost port; return the server."""
-    handler = functools.partial(_QuietHandler, directory=directory)
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    return server
+        handle.write(PAGE_TEMPLATE.format(src=src))
 
 
 def firefox_env(trace_prefix):
@@ -144,10 +113,10 @@ def firefox_env(trace_prefix):
     return env
 
 
-def build_firefox_command(firefox, profile_dir, page):
+def build_firefox_command(profile_dir, page):
     """Build the command line that opens ``page`` in a new instance."""
     return [
-        firefox,
+        FIREFOX,
         "--new-instance",
         "--no-remote",
         "--profile",
@@ -260,6 +229,9 @@ def perform_test(args):
     if not os.path.exists(input_file):
         print("[FAIL] input sample not found: {}".format(input_file))
         return 1
+    if not os.path.exists(FIREFOX):
+        print("[FAIL] Firefox snap not found: {}".format(FIREFOX))
+        return 1
     if not has_display():
         print(
             "[FAIL] no graphical session: Firefox only uses VA-API decode "
@@ -267,21 +239,17 @@ def perform_test(args):
         )
         return 1
 
-    workdir = make_workdir(args.firefox)
-    server = start_server(samples_root())
+    workdir = make_workdir()
     try:
         profile_dir = os.path.join(workdir, "profile")
         page = os.path.join(workdir, "play.html")
         trace_prefix = os.path.join(workdir, "libva.trace")
+        sample = os.path.basename(input_file)
+        shutil.copyfile(input_file, os.path.join(workdir, sample))
         write_profile(profile_dir)
-        write_page(
-            page,
-            "http://127.0.0.1:{}/{}".format(
-                server.server_address[1], args.input
-            ),
-        )
+        write_page(page, sample)
         status = run_firefox(
-            build_firefox_command(args.firefox, profile_dir, page),
+            build_firefox_command(profile_dir, page),
             firefox_env(trace_prefix),
             args.duration,
         )
@@ -292,8 +260,6 @@ def perform_test(args):
             args.min_frames,
         )
     finally:
-        server.shutdown()
-        server.server_close()
         shutil.rmtree(workdir, ignore_errors=True)
 
     if status is not None:
@@ -320,11 +286,6 @@ def parse_args(argv):
         "--entrypoint",
         default="1",
         help="expected VAEntrypoint value (regex fragment, default: 1)",
-    )
-    parser.add_argument(
-        "--firefox",
-        default="firefox",
-        help="Firefox executable to run (default: firefox)",
     )
     parser.add_argument(
         "--duration",
