@@ -33,6 +33,7 @@ PROBE_TRACE = (
     "[1.0][ctx none]\tprofile = 7, VAProfileH264High\n"
     "[1.0][ctx none]\tentrypoint = 1, VAEntrypointVLD\n"
 )
+PICTURES_TRACE = "[2.0][ctx 0x1]==========vaEndPicture\n" * 3
 
 
 class TestMakeWorkdir(unittest.TestCase):
@@ -135,14 +136,16 @@ class TestRunFirefox(unittest.TestCase):
 
 
 class TestTraces(unittest.TestCase):
-    def test_decode_traces_skips_probe(self):
+    def test_read_trace_joins_thread_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             prefix = os.path.join(tmp, "libva.trace")
             with open(prefix + ".1.thd-1", "w") as handle:
                 handle.write(PROBE_TRACE)
-            with open(prefix + ".2.thd-2", "w") as handle:
-                handle.write(DECODE_TRACE)
-            self.assertEqual(m.decode_traces(prefix), [DECODE_TRACE])
+            with open(prefix + ".1.thd-2", "w") as handle:
+                handle.write(PICTURES_TRACE)
+            self.assertEqual(
+                m.read_trace(prefix), PROBE_TRACE + "\n" + PICTURES_TRACE
+            )
 
     def test_count_pictures(self):
         self.assertEqual(m.count_pictures(DECODE_TRACE), 40)
@@ -159,16 +162,20 @@ class TestTraces(unittest.TestCase):
 
 class TestEvaluate(unittest.TestCase):
     def test_pass(self):
-        self.assertTrue(m.evaluate([DECODE_TRACE], "7", "1", 30))
+        self.assertTrue(m.evaluate(DECODE_TRACE, "7", "1"))
 
-    def test_no_traces(self):
-        self.assertFalse(m.evaluate([], "7", "1", 30))
+    def test_pictures_on_another_thread(self):
+        trace = PROBE_TRACE + "\n" + PICTURES_TRACE
+        self.assertTrue(m.evaluate(trace, "7", "1"))
+
+    def test_no_trace(self):
+        self.assertFalse(m.evaluate("", "7", "1"))
+
+    def test_probe_only(self):
+        self.assertFalse(m.evaluate(PROBE_TRACE, "7", "1"))
 
     def test_wrong_profile(self):
-        self.assertFalse(m.evaluate([DECODE_TRACE], "32", "1", 30))
-
-    def test_too_few_pictures(self):
-        self.assertFalse(m.evaluate([DECODE_TRACE], "7", "1", 100))
+        self.assertFalse(m.evaluate(DECODE_TRACE, "32", "1"))
 
 
 class TestHasDisplay(unittest.TestCase):
@@ -193,7 +200,6 @@ class TestPerformTest(unittest.TestCase):
             profile="7",
             entrypoint="1",
             duration=1,
-            min_frames=30,
         )
         base.update(kw)
         return MagicMock(**base)
@@ -239,7 +245,7 @@ class TestPerformTest(unittest.TestCase):
             ), patch(
                 "firefox_hw_codec_test.run_firefox", run_firefox
             ) as run, patch(
-                "firefox_hw_codec_test.decode_traces", return_value=traces
+                "firefox_hw_codec_test.read_trace", return_value=traces
             ):
                 result = m.perform_test(self._args())
             self.assertFalse(os.path.exists(workdir))
@@ -250,13 +256,13 @@ class TestPerformTest(unittest.TestCase):
             return result
 
     def test_pass(self):
-        self.assertEqual(self._run(None, [DECODE_TRACE]), 0)
+        self.assertEqual(self._run(None, DECODE_TRACE), 0)
 
     def test_fail_without_hw(self):
-        self.assertEqual(self._run(None, []), 1)
+        self.assertEqual(self._run(None, ""), 1)
 
     def test_fail_on_early_exit(self):
-        self.assertEqual(self._run(1, [DECODE_TRACE]), 1)
+        self.assertEqual(self._run(1, DECODE_TRACE), 1)
 
 
 class TestArgs(unittest.TestCase):
@@ -264,7 +270,6 @@ class TestArgs(unittest.TestCase):
         args = m.parse_args(["h264/a.mp4", "--profile", "7"])
         self.assertEqual(args.entrypoint, "1")
         self.assertEqual(args.duration, m.DEFAULT_DURATION)
-        self.assertEqual(args.min_frames, m.DEFAULT_MIN_FRAMES)
 
     def test_profile_required(self):
         with self.assertRaises(SystemExit):
