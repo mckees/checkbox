@@ -7,6 +7,7 @@ nested_part:
   - va-api-automated
   - va-api-automated-gstreamer
   - va-api-firefox
+  - va-api-video-players
 ---
 id: va-api-manual
 name: Hardware video acceleration tests (manual)
@@ -48,4 +49,13 @@ unit: test plan
 include:
   - setup/install_media_samples
   - va-api/firefox_hw_decode_.*
+bootstrap_include: []
+---
+id: va-api-video-players
+name: Hardware video acceleration tests (Totem/Showtime, needs a desktop session)
+unit: test plan
+include:
+  - setup/install_media_samples
+  - va-api/totem_hw_decode_.*
+  - va-api/showtime_hw_decode_.*
 bootstrap_include: []

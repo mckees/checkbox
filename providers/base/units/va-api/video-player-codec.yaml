@@ -1,0 +1,655 @@
+# Desktop video player VAAPI hardware video decode tests.
+# Sample media files are provided by the media-samples snap; set
+# MEDIA_SAMPLES_PATH to override the default snap mount location.
+#
+# Totem (the default video player up to Ubuntu 24.04) and Showtime (the
+# default from Ubuntu 26.04) both play media with GStreamer, so they reuse
+# the gstreamer decode samples. Jobs for a player only run when it is
+# installed. MJPEG is not covered: GStreamer ships the VA-API JPEG decoder
+# with no rank, so stock players never pick it.
+#
+# The players need a desktop (Wayland or X11) session and run as the normal
+# user inside it. They are single instance applications, so make sure the
+# player is not already running.
+#
+# Which codec jobs run is decided by the DUT manifest: each job requires the
+# has_<profile>_decoder entry for the codec it plays, so a device that is
+# expected to hardware-decode a codec fails (rather than silently skips) if
+# the player does not use the hardware decoder for it.
+id: va-api/totem_hw_decode_av1_1080p_mkv
+depends:
+  - setup/install_media_samples
+category_id: va-api
+flags:
+  - simple
+imports:
+  - from com.canonical.plainbox import manifest
+requires:
+  - executable.name == 'totem'
+  - desktop_session.desktop_session == 'True'
+  - manifest.has_av1_profile0_decoder == 'True'
+summary: Totem VAAPI hardware decode of AV1 1080p video
+environ:
+  - MEDIA_SAMPLES_PATH
+  - LIBVA_DRIVER_NAME
+  - DISPLAY
+  - WAYLAND_DISPLAY
+  - XDG_RUNTIME_DIR
+  - XDG_SESSION_TYPE
+  - DBUS_SESSION_BUS_ADDRESS
+estimated_duration: 40s
+command: video_player_hw_codec_test.py totem av1/bbb_sunflower_1080p_30fps_normal_AV1.mkv --profile 32
+siblings:
+  - id: va-api/totem_hw_decode_av1_1080p_webm
+    summary: Totem VAAPI hardware decode of AV1 1080p video
+    command: video_player_hw_codec_test.py totem av1/bbb_sunflower_1080p_30fps_normal_AV1.webm --profile 32
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_av1_180p_mp4
+    summary: Totem VAAPI hardware decode of AV1 180p video
+    command: video_player_hw_codec_test.py totem av1/bbb_sunflower_180p_30fps_normal_av1.mp4 --profile 32
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_av1_2160p_mkv
+    summary: Totem VAAPI hardware decode of AV1 4K video
+    command: video_player_hw_codec_test.py totem av1/bbb_sunflower_2160p_30fps_normal_AV1.mkv --profile 32
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_av1_2160p_webm
+    summary: Totem VAAPI hardware decode of AV1 4K video
+    command: video_player_hw_codec_test.py totem av1/bbb_sunflower_2160p_30fps_normal_AV1.webm --profile 32
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_av1_360p_mp4
+    summary: Totem VAAPI hardware decode of AV1 360p video
+    command: video_player_hw_codec_test.py totem av1/bbb_sunflower_360p_30fps_normal_av1.mp4 --profile 32
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_av1_480p_mp4
+    summary: Totem VAAPI hardware decode of AV1 480p video
+    command: video_player_hw_codec_test.py totem av1/bbb_sunflower_480p_30fps_normal_av1.mp4 --profile 32
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_av1_720p_mp4
+    summary: Totem VAAPI hardware decode of AV1 720p video
+    command: video_player_hw_codec_test.py totem av1/bbb_sunflower_720p_30fps_normal_av1.mp4 --profile 32
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_h264_1080p_mp4
+    summary: Totem VAAPI hardware decode of H264 1080p video
+    command: video_player_hw_codec_test.py totem h264/bbb_sunflower_1080p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/totem_hw_decode_h264_180p_mp4
+    summary: Totem VAAPI hardware decode of H264 180p video
+    command: video_player_hw_codec_test.py totem h264/bbb_sunflower_180p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/totem_hw_decode_h264_2160p_mp4
+    summary: Totem VAAPI hardware decode of H264 4K video
+    command: video_player_hw_codec_test.py totem h264/bbb_sunflower_2160p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/totem_hw_decode_h264_360p_mp4
+    summary: Totem VAAPI hardware decode of H264 360p video
+    command: video_player_hw_codec_test.py totem h264/bbb_sunflower_360p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/totem_hw_decode_h264_480p_mp4
+    summary: Totem VAAPI hardware decode of H264 480p video
+    command: video_player_hw_codec_test.py totem h264/bbb_sunflower_480p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/totem_hw_decode_h264_720p_mp4
+    summary: Totem VAAPI hardware decode of H264 720p video
+    command: video_player_hw_codec_test.py totem h264/bbb_sunflower_720p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp8_1080p_webm
+    summary: Totem VAAPI hardware decode of VP8 1080p video
+    command: video_player_hw_codec_test.py totem vp8/bbb_sunflower_1080p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp8_180p_webm
+    summary: Totem VAAPI hardware decode of VP8 180p video
+    command: video_player_hw_codec_test.py totem vp8/bbb_sunflower_180p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp8_2160p_webm
+    summary: Totem VAAPI hardware decode of VP8 4K video
+    command: video_player_hw_codec_test.py totem vp8/bbb_sunflower_2160p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp8_360p_webm
+    summary: Totem VAAPI hardware decode of VP8 360p video
+    command: video_player_hw_codec_test.py totem vp8/bbb_sunflower_360p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp8_480p_webm
+    summary: Totem VAAPI hardware decode of VP8 480p video
+    command: video_player_hw_codec_test.py totem vp8/bbb_sunflower_480p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp8_720p_webm
+    summary: Totem VAAPI hardware decode of VP8 720p video
+    command: video_player_hw_codec_test.py totem vp8/bbb_sunflower_720p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp9_1080p_mkv
+    summary: Totem VAAPI hardware decode of VP9 1080p video
+    command: video_player_hw_codec_test.py totem vp9/bbb_sunflower_1080p_30fps_normal_VP9.mkv --profile 19
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp9_1080p_webm
+    summary: Totem VAAPI hardware decode of VP9 1080p video
+    command: video_player_hw_codec_test.py totem vp9/bbb_sunflower_1080p_30fps_normal_VP9.webm --profile 19
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp9_180p_webm
+    summary: Totem VAAPI hardware decode of VP9 180p video
+    command: video_player_hw_codec_test.py totem vp9/bbb_sunflower_180p_30fps_normal_vp9.webm --profile 19
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp9_2160p_mkv
+    summary: Totem VAAPI hardware decode of VP9 4K video
+    command: video_player_hw_codec_test.py totem vp9/bbb_sunflower_2160p_60fps_normal_VP9.mkv --profile 19
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp9_2160p_webm
+    summary: Totem VAAPI hardware decode of VP9 4K video
+    command: video_player_hw_codec_test.py totem vp9/bbb_sunflower_2160p_60fps_normal_VP9.webm --profile 19
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp9_360p_webm
+    summary: Totem VAAPI hardware decode of VP9 360p video
+    command: video_player_hw_codec_test.py totem vp9/bbb_sunflower_360p_30fps_normal_vp9.webm --profile 19
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp9_480p_webm
+    summary: Totem VAAPI hardware decode of VP9 480p video
+    command: video_player_hw_codec_test.py totem vp9/bbb_sunflower_480p_30fps_normal_vp9.webm --profile 19
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp9_720p_webm
+    summary: Totem VAAPI hardware decode of VP9 720p video
+    command: video_player_hw_codec_test.py totem vp9/bbb_sunflower_720p_30fps_normal_vp9.webm --profile 19
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_h264_1080p_60fps_mp4
+    summary: Totem VAAPI hardware decode of H264 1080p 60fps video
+    command: video_player_hw_codec_test.py totem h264/bbb_sunflower_1080p_60fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/totem_hw_decode_h264_2160p_mkv
+    summary: Totem VAAPI hardware decode of H264 4K video
+    command: video_player_hw_codec_test.py totem h264/bbb_sunflower_2160p_30fps_normal_h264.mkv --profile 7
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/totem_hw_decode_h264_2160p_60fps_mp4
+    summary: Totem VAAPI hardware decode of H264 4K 60fps video
+    command: video_player_hw_codec_test.py totem h264/bbb_sunflower_2160p_60fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/totem_hw_decode_h265_180p_mp4
+    summary: Totem VAAPI hardware decode of H265 180p video
+    command: video_player_hw_codec_test.py totem h265/bbb_sunflower_180p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/totem_hw_decode_h265_360p_mp4
+    summary: Totem VAAPI hardware decode of H265 360p video
+    command: video_player_hw_codec_test.py totem h265/bbb_sunflower_360p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/totem_hw_decode_h265_480p_mp4
+    summary: Totem VAAPI hardware decode of H265 480p video
+    command: video_player_hw_codec_test.py totem h265/bbb_sunflower_480p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/totem_hw_decode_h265_720p_mp4
+    summary: Totem VAAPI hardware decode of H265 720p video
+    command: video_player_hw_codec_test.py totem h265/bbb_sunflower_720p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/totem_hw_decode_h265_1080p_mp4
+    summary: Totem VAAPI hardware decode of H265 1080p video
+    command: video_player_hw_codec_test.py totem h265/bbb_sunflower_1080p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/totem_hw_decode_h265_2160p_mp4
+    summary: Totem VAAPI hardware decode of H265 4K video
+    command: video_player_hw_codec_test.py totem h265/bbb_sunflower_2160p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/totem_hw_decode_mpeg2_180p_mpg
+    summary: Totem VAAPI hardware decode of MPEG2 180p video
+    command: video_player_hw_codec_test.py totem mpeg2/bbb_sunflower_180p_30fps_normal_mpeg2.mpg --profile 1
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_mpeg2_main_decoder == 'True'
+  - id: va-api/totem_hw_decode_mpeg2_360p_mpg
+    summary: Totem VAAPI hardware decode of MPEG2 360p video
+    command: video_player_hw_codec_test.py totem mpeg2/bbb_sunflower_360p_30fps_normal_mpeg2.mpg --profile 1
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_mpeg2_main_decoder == 'True'
+  - id: va-api/totem_hw_decode_mpeg2_480p_mpg
+    summary: Totem VAAPI hardware decode of MPEG2 480p video
+    command: video_player_hw_codec_test.py totem mpeg2/bbb_sunflower_480p_30fps_normal_mpeg2.mpg --profile 1
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_mpeg2_main_decoder == 'True'
+  - id: va-api/totem_hw_decode_mpeg2_720p_mpg
+    summary: Totem VAAPI hardware decode of MPEG2 720p video
+    command: video_player_hw_codec_test.py totem mpeg2/bbb_sunflower_720p_30fps_normal_mpeg2.mpg --profile 1
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_mpeg2_main_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp9_1080p_mp4
+    summary: Totem VAAPI hardware decode of VP9 1080p video
+    command: video_player_hw_codec_test.py totem vp9/bbb_sunflower_1080p_30fps_normal_VP9.mp4 --profile 19
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/totem_hw_decode_vp9_1080p_60fps_mkv
+    summary: Totem VAAPI hardware decode of VP9 1080p 60fps video
+    command: video_player_hw_codec_test.py totem vp9/bbb_sunflower_1080p_60fps_normal_VP9.mkv --profile 19
+    requires:
+      - executable.name == 'totem'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+---
+id: va-api/showtime_hw_decode_av1_1080p_mkv
+depends:
+  - setup/install_media_samples
+category_id: va-api
+flags:
+  - simple
+imports:
+  - from com.canonical.plainbox import manifest
+requires:
+  - executable.name == 'showtime'
+  - desktop_session.desktop_session == 'True'
+  - manifest.has_av1_profile0_decoder == 'True'
+summary: Showtime VAAPI hardware decode of AV1 1080p video
+environ:
+  - MEDIA_SAMPLES_PATH
+  - LIBVA_DRIVER_NAME
+  - DISPLAY
+  - WAYLAND_DISPLAY
+  - XDG_RUNTIME_DIR
+  - XDG_SESSION_TYPE
+  - DBUS_SESSION_BUS_ADDRESS
+estimated_duration: 40s
+command: video_player_hw_codec_test.py showtime av1/bbb_sunflower_1080p_30fps_normal_AV1.mkv --profile 32
+siblings:
+  - id: va-api/showtime_hw_decode_av1_1080p_webm
+    summary: Showtime VAAPI hardware decode of AV1 1080p video
+    command: video_player_hw_codec_test.py showtime av1/bbb_sunflower_1080p_30fps_normal_AV1.webm --profile 32
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_av1_180p_mp4
+    summary: Showtime VAAPI hardware decode of AV1 180p video
+    command: video_player_hw_codec_test.py showtime av1/bbb_sunflower_180p_30fps_normal_av1.mp4 --profile 32
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_av1_2160p_mkv
+    summary: Showtime VAAPI hardware decode of AV1 4K video
+    command: video_player_hw_codec_test.py showtime av1/bbb_sunflower_2160p_30fps_normal_AV1.mkv --profile 32
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_av1_2160p_webm
+    summary: Showtime VAAPI hardware decode of AV1 4K video
+    command: video_player_hw_codec_test.py showtime av1/bbb_sunflower_2160p_30fps_normal_AV1.webm --profile 32
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_av1_360p_mp4
+    summary: Showtime VAAPI hardware decode of AV1 360p video
+    command: video_player_hw_codec_test.py showtime av1/bbb_sunflower_360p_30fps_normal_av1.mp4 --profile 32
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_av1_480p_mp4
+    summary: Showtime VAAPI hardware decode of AV1 480p video
+    command: video_player_hw_codec_test.py showtime av1/bbb_sunflower_480p_30fps_normal_av1.mp4 --profile 32
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_av1_720p_mp4
+    summary: Showtime VAAPI hardware decode of AV1 720p video
+    command: video_player_hw_codec_test.py showtime av1/bbb_sunflower_720p_30fps_normal_av1.mp4 --profile 32
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_av1_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h264_1080p_mp4
+    summary: Showtime VAAPI hardware decode of H264 1080p video
+    command: video_player_hw_codec_test.py showtime h264/bbb_sunflower_1080p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h264_180p_mp4
+    summary: Showtime VAAPI hardware decode of H264 180p video
+    command: video_player_hw_codec_test.py showtime h264/bbb_sunflower_180p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h264_2160p_mp4
+    summary: Showtime VAAPI hardware decode of H264 4K video
+    command: video_player_hw_codec_test.py showtime h264/bbb_sunflower_2160p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h264_360p_mp4
+    summary: Showtime VAAPI hardware decode of H264 360p video
+    command: video_player_hw_codec_test.py showtime h264/bbb_sunflower_360p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h264_480p_mp4
+    summary: Showtime VAAPI hardware decode of H264 480p video
+    command: video_player_hw_codec_test.py showtime h264/bbb_sunflower_480p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h264_720p_mp4
+    summary: Showtime VAAPI hardware decode of H264 720p video
+    command: video_player_hw_codec_test.py showtime h264/bbb_sunflower_720p_30fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp8_1080p_webm
+    summary: Showtime VAAPI hardware decode of VP8 1080p video
+    command: video_player_hw_codec_test.py showtime vp8/bbb_sunflower_1080p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp8_180p_webm
+    summary: Showtime VAAPI hardware decode of VP8 180p video
+    command: video_player_hw_codec_test.py showtime vp8/bbb_sunflower_180p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp8_2160p_webm
+    summary: Showtime VAAPI hardware decode of VP8 4K video
+    command: video_player_hw_codec_test.py showtime vp8/bbb_sunflower_2160p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp8_360p_webm
+    summary: Showtime VAAPI hardware decode of VP8 360p video
+    command: video_player_hw_codec_test.py showtime vp8/bbb_sunflower_360p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp8_480p_webm
+    summary: Showtime VAAPI hardware decode of VP8 480p video
+    command: video_player_hw_codec_test.py showtime vp8/bbb_sunflower_480p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp8_720p_webm
+    summary: Showtime VAAPI hardware decode of VP8 720p video
+    command: video_player_hw_codec_test.py showtime vp8/bbb_sunflower_720p_30fps_normal_vp8.webm --profile 14
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp8_version0_3_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp9_1080p_mkv
+    summary: Showtime VAAPI hardware decode of VP9 1080p video
+    command: video_player_hw_codec_test.py showtime vp9/bbb_sunflower_1080p_30fps_normal_VP9.mkv --profile 19
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp9_1080p_webm
+    summary: Showtime VAAPI hardware decode of VP9 1080p video
+    command: video_player_hw_codec_test.py showtime vp9/bbb_sunflower_1080p_30fps_normal_VP9.webm --profile 19
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp9_180p_webm
+    summary: Showtime VAAPI hardware decode of VP9 180p video
+    command: video_player_hw_codec_test.py showtime vp9/bbb_sunflower_180p_30fps_normal_vp9.webm --profile 19
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp9_2160p_mkv
+    summary: Showtime VAAPI hardware decode of VP9 4K video
+    command: video_player_hw_codec_test.py showtime vp9/bbb_sunflower_2160p_60fps_normal_VP9.mkv --profile 19
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp9_2160p_webm
+    summary: Showtime VAAPI hardware decode of VP9 4K video
+    command: video_player_hw_codec_test.py showtime vp9/bbb_sunflower_2160p_60fps_normal_VP9.webm --profile 19
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp9_360p_webm
+    summary: Showtime VAAPI hardware decode of VP9 360p video
+    command: video_player_hw_codec_test.py showtime vp9/bbb_sunflower_360p_30fps_normal_vp9.webm --profile 19
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp9_480p_webm
+    summary: Showtime VAAPI hardware decode of VP9 480p video
+    command: video_player_hw_codec_test.py showtime vp9/bbb_sunflower_480p_30fps_normal_vp9.webm --profile 19
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp9_720p_webm
+    summary: Showtime VAAPI hardware decode of VP9 720p video
+    command: video_player_hw_codec_test.py showtime vp9/bbb_sunflower_720p_30fps_normal_vp9.webm --profile 19
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h264_1080p_60fps_mp4
+    summary: Showtime VAAPI hardware decode of H264 1080p 60fps video
+    command: video_player_hw_codec_test.py showtime h264/bbb_sunflower_1080p_60fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h264_2160p_mkv
+    summary: Showtime VAAPI hardware decode of H264 4K video
+    command: video_player_hw_codec_test.py showtime h264/bbb_sunflower_2160p_30fps_normal_h264.mkv --profile 7
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h264_2160p_60fps_mp4
+    summary: Showtime VAAPI hardware decode of H264 4K 60fps video
+    command: video_player_hw_codec_test.py showtime h264/bbb_sunflower_2160p_60fps_normal_h264.mp4 --profile 7
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_h264_high_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h265_180p_mp4
+    summary: Showtime VAAPI hardware decode of H265 180p video
+    command: video_player_hw_codec_test.py showtime h265/bbb_sunflower_180p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h265_360p_mp4
+    summary: Showtime VAAPI hardware decode of H265 360p video
+    command: video_player_hw_codec_test.py showtime h265/bbb_sunflower_360p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h265_480p_mp4
+    summary: Showtime VAAPI hardware decode of H265 480p video
+    command: video_player_hw_codec_test.py showtime h265/bbb_sunflower_480p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h265_720p_mp4
+    summary: Showtime VAAPI hardware decode of H265 720p video
+    command: video_player_hw_codec_test.py showtime h265/bbb_sunflower_720p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h265_1080p_mp4
+    summary: Showtime VAAPI hardware decode of H265 1080p video
+    command: video_player_hw_codec_test.py showtime h265/bbb_sunflower_1080p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/showtime_hw_decode_h265_2160p_mp4
+    summary: Showtime VAAPI hardware decode of H265 4K video
+    command: video_player_hw_codec_test.py showtime h265/bbb_sunflower_2160p_30fps_normal_h265.mp4 --profile 17
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_hevc_main_decoder == 'True'
+  - id: va-api/showtime_hw_decode_mpeg2_180p_mpg
+    summary: Showtime VAAPI hardware decode of MPEG2 180p video
+    command: video_player_hw_codec_test.py showtime mpeg2/bbb_sunflower_180p_30fps_normal_mpeg2.mpg --profile 1
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_mpeg2_main_decoder == 'True'
+  - id: va-api/showtime_hw_decode_mpeg2_360p_mpg
+    summary: Showtime VAAPI hardware decode of MPEG2 360p video
+    command: video_player_hw_codec_test.py showtime mpeg2/bbb_sunflower_360p_30fps_normal_mpeg2.mpg --profile 1
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_mpeg2_main_decoder == 'True'
+  - id: va-api/showtime_hw_decode_mpeg2_480p_mpg
+    summary: Showtime VAAPI hardware decode of MPEG2 480p video
+    command: video_player_hw_codec_test.py showtime mpeg2/bbb_sunflower_480p_30fps_normal_mpeg2.mpg --profile 1
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_mpeg2_main_decoder == 'True'
+  - id: va-api/showtime_hw_decode_mpeg2_720p_mpg
+    summary: Showtime VAAPI hardware decode of MPEG2 720p video
+    command: video_player_hw_codec_test.py showtime mpeg2/bbb_sunflower_720p_30fps_normal_mpeg2.mpg --profile 1
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_mpeg2_main_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp9_1080p_mp4
+    summary: Showtime VAAPI hardware decode of VP9 1080p video
+    command: video_player_hw_codec_test.py showtime vp9/bbb_sunflower_1080p_30fps_normal_VP9.mp4 --profile 19
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
+  - id: va-api/showtime_hw_decode_vp9_1080p_60fps_mkv
+    summary: Showtime VAAPI hardware decode of VP9 1080p 60fps video
+    command: video_player_hw_codec_test.py showtime vp9/bbb_sunflower_1080p_60fps_normal_VP9.mkv --profile 19
+    requires:
+      - executable.name == 'showtime'
+      - desktop_session.desktop_session == 'True'
+      - manifest.has_vp9_profile0_decoder == 'True'
