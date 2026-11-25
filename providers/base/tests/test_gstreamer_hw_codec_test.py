@@ -203,12 +203,13 @@ class TestPerformTest(unittest.TestCase):
         read_trace.return_value = "profile = 32\nentrypoint = 1\n"
         self.assertEqual(m.perform_test(self._args()), 1)
 
+    @patch("gstreamer_hw_codec_test.resolve_encoder", side_effect=lambda e: e)
     @patch("gstreamer_hw_codec_test._check_ssim", return_value=True)
     @patch("gstreamer_hw_codec_test.read_trace")
     @patch("gstreamer_hw_codec_test.run_gst")
     @patch("gstreamer_hw_codec_test.os.path.exists", return_value=True)
     def test_encode_pass_uses_output_container(
-        self, _exists, run_gst, read_trace, check_ssim
+        self, _exists, run_gst, read_trace, check_ssim, _resolve
     ):
         run_gst.return_value = 0
         read_trace.return_value = "profile = 7\nentrypoint = 8\n"
@@ -227,12 +228,13 @@ class TestPerformTest(unittest.TestCase):
         self.assertIn("vah264enc", built)
         self.assertIsNone(run_gst.call_args_list[0][0][2])
 
+    @patch("gstreamer_hw_codec_test.resolve_encoder", side_effect=lambda e: e)
     @patch("gstreamer_hw_codec_test._check_ssim", return_value=False)
     @patch("gstreamer_hw_codec_test.read_trace")
     @patch("gstreamer_hw_codec_test.run_gst")
     @patch("gstreamer_hw_codec_test.os.path.exists", return_value=True)
     def test_encode_fail_when_ssim_low(
-        self, _exists, run_gst, read_trace, check_ssim
+        self, _exists, run_gst, read_trace, check_ssim, _resolve
     ):
         run_gst.return_value = 0
         read_trace.return_value = "profile = 7\nentrypoint = 8\n"
@@ -249,12 +251,62 @@ class TestPerformTest(unittest.TestCase):
         self.assertEqual(m.perform_test(args), 1)
 
 
+class TestResolveEncoder(unittest.TestCase):
+    @patch("gstreamer_hw_codec_test.element_exists", return_value=True)
+    def test_keeps_available_encoder(self, exists):
+        self.assertEqual(m.resolve_encoder("vah264enc"), "vah264enc")
+
+    @patch(
+        "gstreamer_hw_codec_test.element_exists",
+        side_effect=lambda e: e == "vah264lpenc",
+    )
+    def test_falls_back_to_low_power(self, exists):
+        self.assertEqual(m.resolve_encoder("vah264enc"), "vah264lpenc")
+
+    @patch("gstreamer_hw_codec_test.element_exists", return_value=False)
+    def test_returns_requested_when_nothing_available(self, exists):
+        self.assertEqual(m.resolve_encoder("vavp9enc"), "vavp9enc")
+
+    @patch("gstreamer_hw_codec_test.subprocess.run")
+    def test_element_exists_uses_host_env(self, sp_run):
+        sp_run.return_value = MagicMock(returncode=0)
+        with patch.dict(os.environ, {"LD_LIBRARY_PATH": "/snap/x/lib"}):
+            self.assertTrue(m.element_exists("vah264enc"))
+        cmd = sp_run.call_args[0][0]
+        self.assertEqual(cmd, ["gst-inspect-1.0", "--exists", "vah264enc"])
+        self.assertNotIn("LD_LIBRARY_PATH", sp_run.call_args[1]["env"])
+
+
 class TestCheckSsim(unittest.TestCase):
     def test_fails_without_output(self):
         with patch.object(m.os.path, "exists", return_value=False):
             self.assertFalse(
                 m._check_ssim("in.mp4", "out.mp4", "/tmp", "/tmp/t")
             )
+
+
+class TestHostEnv(unittest.TestCase):
+    def test_strips_snap_runtime(self):
+        snap_env = {
+            "PATH": "/snap/checkbox24/1/usr/bin:/usr/bin:/snap/bin",
+            "LD_LIBRARY_PATH": "/snap/checkbox24/1/usr/lib",
+            "GST_PLUGIN_PATH": "/snap/checkbox24/1/usr/lib/gstreamer-1.0",
+            "GST_PLUGIN_SYSTEM_PATH": "/snap/checkbox24/1/gst",
+            "GST_PLUGIN_SCANNER": "/snap/checkbox24/1/gst-plugin-scanner",
+            "FOO": "bar",
+        }
+        with patch.dict(os.environ, snap_env, clear=True):
+            env = m.host_env()
+        self.assertEqual(env, {"PATH": "/usr/bin", "FOO": "bar"})
+
+    def test_keeps_host_plugin_path(self):
+        with patch.dict(
+            os.environ,
+            {"GST_PLUGIN_PATH": "/opt/gst:/snap/x/gst", "PATH": "/usr/bin"},
+            clear=True,
+        ):
+            env = m.host_env()
+        self.assertEqual(env["GST_PLUGIN_PATH"], "/opt/gst")
 
 
 class TestRunGst(unittest.TestCase):
