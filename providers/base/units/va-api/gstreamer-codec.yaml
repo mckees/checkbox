@@ -7,6 +7,23 @@
 # job. Which codec jobs run is decided by the va-api/vainfo resource (from
 # va_profile_check.py), matching each job to the VAProfile and direction the
 # driver actually advertises.
+id: va-api/gstreamer_va_elements
+summary: List the VA-API elements provided by the host GStreamer va plugin
+category_id: va-api
+plugin: resource
+requires:
+  - executable.name == 'gst-inspect-1.0'
+estimated_duration: 2s
+# Not every GStreamer release has an element for every codec the driver
+# supports (e.g. vavp9enc/vavp9lpenc first appear in 1.26), so encode jobs
+# also gate on the element being present. Run the host GStreamer rather
+# than the one in the Checkbox runtime snap.
+command: |
+  env -u LD_LIBRARY_PATH -u GST_PLUGIN_SYSTEM_PATH -u GST_PLUGIN_SCANNER \
+    -u GST_PLUGIN_PATH PATH=/usr/sbin:/usr/bin:/sbin:/bin \
+    gst-inspect-1.0 va 2>/dev/null |
+    awk '/^  va[a-z0-9]+: / { sub(/:.*/, ""); sub(/^ +/, ""); printf "name: %s\n\n", $0 }'
+---
 unit: job
 plugin: shell
 id: va-api/gstreamer_hw_vaapi_device
@@ -31,7 +48,7 @@ command: |
   if [ -n "${VAAPI_DEVICE:-}" ]; then
     set -- --device "$VAAPI_DEVICE"
   fi
-  if vainfo --display drm "$@"; then
+  if env -u LD_LIBRARY_PATH vainfo --display drm "$@"; then
     echo "PASS: VA-API usable on ${VAAPI_DEVICE:-the default render node}"
   else
     echo "FAIL: vainfo could not initialise VA-API on ${VAAPI_DEVICE:-the default render node}"
@@ -357,6 +374,7 @@ flags:
   - simple
 imports:
   - from com.canonical.certification import va-api/vainfo as va_vainfo
+  - from com.canonical.certification import va-api/gstreamer_va_elements as gst_va_element
 requires:
   - executable.name == 'gst-launch-1.0'
   - package.name == 'gstreamer1.0-libav'
@@ -398,6 +416,7 @@ siblings:
       - executable.name == 'gst-launch-1.0'
       - package.name == 'gstreamer1.0-libav'
       - va_vainfo.profile_name in ('VAProfileVP9Profile0', 'VAProfileVP9Profile1', 'VAProfileVP9Profile2', 'VAProfileVP9Profile3') and va_vainfo.direction == 'encoder'
+      - gst_va_element.name in ('vavp9enc', 'vavp9lpenc')
   - id: va-api/gstreamer_hw_encode_vp9_2160p
     summary: gstreamer VAAPI hardware encode to VP9 4K video
     command: gstreamer_hw_codec_test.py encode h264/bbb_sunflower_2160p_30fps_normal_h264.mp4 --encoder vavp9enc --parser vp9parse --muxer webmmux --output-container mkv --profile '(19|20|21|22)' --entrypoint '(6|8)'
@@ -405,3 +424,4 @@ siblings:
       - executable.name == 'gst-launch-1.0'
       - package.name == 'gstreamer1.0-libav'
       - va_vainfo.profile_name in ('VAProfileVP9Profile0', 'VAProfileVP9Profile1', 'VAProfileVP9Profile2', 'VAProfileVP9Profile3') and va_vainfo.direction == 'encoder'
+      - gst_va_element.name in ('vavp9enc', 'vavp9lpenc')

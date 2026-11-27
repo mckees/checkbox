@@ -40,3 +40,4 @@ include:
   - va-api/gstreamer_hw_encode_.*
 bootstrap_include:
   - va-api/vainfo
+  - va-api/gstreamer_va_elements

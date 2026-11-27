@@ -20,6 +20,7 @@ Compare the VA-API profiles and entrypoints advertised by the driver
 """
 
 import argparse
+import os
 import re
 import sys
 from collections import defaultdict
@@ -96,8 +97,20 @@ def get_supported_features(output):
     return features
 
 
+def host_env():
+    """
+    Return the environment without LD_LIBRARY_PATH, so host vainfo loads the
+    host libva instead of an older copy bundled in the Checkbox runtime.
+    """
+    env = dict(os.environ)
+    env.pop("LD_LIBRARY_PATH", None)
+    return env
+
+
 def run_vainfo():
-    return check_output(["vainfo"], universal_newlines=True, stderr=STDOUT)
+    return check_output(
+        ["vainfo"], universal_newlines=True, stderr=STDOUT, env=host_env()
+    )
 
 
 def get_manifest_key(feature):

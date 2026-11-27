@@ -230,9 +230,69 @@ def parse_min_ssim(stats_text):
     return min(values)
 
 
+def host_env():
+    """Return an environment that runs the host GStreamer stack.
+
+    The Checkbox runtime snap puts its own ``gst-launch-1.0``, GStreamer
+    plugins and libraries (including an older libva) first in ``PATH``,
+    ``GST_PLUGIN_*`` and ``LD_LIBRARY_PATH``. Those cannot load the host VA
+    driver, so strip every snap-provided entry and let the host stack be used.
+    """
+    env = dict(os.environ)
+    for var in (
+        "LD_LIBRARY_PATH",
+        "GST_PLUGIN_SYSTEM_PATH",
+        "GST_PLUGIN_SCANNER",
+    ):
+        env.pop(var, None)
+    for var in ("PATH", "GST_PLUGIN_PATH"):
+        if var not in env:
+            continue
+        kept = [
+            entry
+            for entry in env[var].split(os.pathsep)
+            if entry and not entry.startswith("/snap/")
+        ]
+        if kept:
+            env[var] = os.pathsep.join(kept)
+        else:
+            del env[var]
+    return env
+
+
+def element_exists(element):
+    """Return True if the host GStreamer provides ``element``."""
+    result = subprocess.run(
+        ["gst-inspect-1.0", "--exists", element],
+        env=host_env(),
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return result.returncode == 0
+
+
+def resolve_encoder(encoder):
+    """Return the VA-API encoder element to use for ``encoder``.
+
+    The ``va`` plugin registers ``va<codec>enc`` only when the driver offers
+    the full-power ``VAEntrypointEncSlice`` and ``va<codec>lpenc`` for the
+    low-power ``VAEntrypointEncSliceLP``. Some platforms (e.g. Jasper Lake,
+    or VP9 on any Intel GPU) only have the low-power path, so fall back to
+    the ``lpenc`` variant when the requested element is missing.
+    """
+    if element_exists(encoder):
+        return encoder
+    if encoder.startswith("va") and encoder.endswith("enc"):
+        low_power = encoder[: -len("enc")] + "lpenc"
+        if element_exists(low_power):
+            print("{} not available, using {}".format(encoder, low_power))
+            return low_power
+    return encoder
+
+
 def run_gst(command, trace_prefix, extra_env=None):
     """Run gst-launch with libva tracing enabled and return the exit code."""
-    env = dict(os.environ)
+    env = host_env()
     env["LIBVA_TRACE"] = trace_prefix
     if extra_env:
         env.update(extra_env)
@@ -299,7 +359,7 @@ def perform_test(args):
                 workdir, "out.{}".format(args.output_container)
             )
             command = build_encode_command(
-                input_file, args.encoder, args.parser, args.muxer, output_file
+                input_file, resolve_encoder(args.encoder), args.parser, args.muxer, output_file
             )
             extra_env = None
         gst_status = run_gst(command, trace_prefix, extra_env)
